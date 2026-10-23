@@ -4,4 +4,6 @@
     <color name="ic_launcher_background">#FFFFFF</color>
     <!-- Teinte appliquée à l'icône de notification (silhouette blanche) -->
     <color name="notification_color">#0B4A24</color>
+    <!-- Fond de l'écran de lancement (vert de la marque, comme l'intro) -->
+    <color name="lancement">#0B4A24</color>
 </resources>

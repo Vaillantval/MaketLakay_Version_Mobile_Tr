@@ -11,6 +11,7 @@ import '../../../core/utils/image_utils.dart';
 import '../../../models/pos_produit_catalogue.dart';
 import '../../../shared/ui/ui.dart';
 import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/logo_anime.dart';
 import '../providers/pos_catalogue_provider.dart';
 import '../providers/pos_panier_provider.dart';
 import '../providers/pos_session_provider.dart';
@@ -47,19 +48,27 @@ class _PosVenteScreenState extends ConsumerState<PosVenteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 16, 0),
+              child: Row(
+                children: [
+                  const MarqueAnimee(taille: 44, tailleTexte: 21),
+                  const Spacer(),
+                  BoutonRond(Icons.refresh_rounded,
+                      tooltip: 'Actualiser le catalogue',
+                      onTap: () => ref.read(posCatalogueProvider.notifier).charger()),
+                ],
+              ),
+            ),
             EnTeteEcran(
               'Vente',
+              padding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
               // (« Aucune session ouverte » : déjà dans le bandeau cliquable)
               surtitre: ouverte
                   ? 'Session ouverte depuis ${FormatUtils.heure(session.ouverteLe)}'
                   : [terminal.nom, terminal.commune]
                       .where((v) => (v ?? '').isNotEmpty)
                       .join(' · '),
-              actions: [
-                BoutonRond(Icons.refresh_rounded,
-                    tooltip: 'Actualiser le catalogue',
-                    onTap: () => ref.read(posCatalogueProvider.notifier).charger()),
-              ],
             ),
             Expanded(
               child: catalogueState.when(

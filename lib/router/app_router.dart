@@ -72,6 +72,8 @@ class _AuthRefreshNotifier extends ChangeNotifier {
     _ref.listen<AuthState>(authProvider, (_, __) => notifyListeners());
     // Entrer / sortir de l'espace entreprise, ou changer d'entreprise
     _ref.listen<int?>(entrepriseActiveIdProvider, (_, __) => notifyListeners());
+    // Fin de l'intro du premier lancement : quitter /splash
+    _ref.listen<bool>(introEnCoursProvider, (_, __) => notifyListeners());
   }
   final Ref _ref;
 }
@@ -95,6 +97,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (status == AuthStatus.unknown) {
         return path == '/splash' ? null : '/splash';
       }
+      // Premier lancement : rester sur l'intro animée jusqu'à sa fin
+      if (path == '/splash' && ref.read(introEnCoursProvider)) return null;
 
       // Visiteur : comme sur le site, la boutique (accueil, catalogue,
       // fiches produits) se parcourt sans compte ; le reste (panier,
