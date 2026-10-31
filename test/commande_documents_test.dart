@@ -74,6 +74,14 @@ void main() {
       }
     });
 
+    test("commande remboursée : l'avoir, même annulée", () {
+      expect(
+          DocumentCommande.disponible(
+              _commande(statut: 'annulee', paiement: 'rembourse')),
+          DocumentCommande.avoir);
+      expect(DocumentCommande.avoir.nomFichier(null, 'CMD-1'), 'Avoir-CMD-1.pdf');
+    });
+
     test('rien pour une commande annulée ou un paiement en ligne en attente', () {
       expect(DocumentCommande.disponible(_commande(statut: 'annulee')), isNull);
       expect(DocumentCommande.disponible(_commande(methode: 'moncash')), isNull);

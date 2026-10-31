@@ -12,7 +12,8 @@ import '../api/api_endpoints.dart';
 /// PDF d'une commande, téléchargé avec le jeton puis ouvert sur le téléphone.
 enum DocumentCommande {
   recu('Télécharger le reçu (PDF)', 'Recu'),
-  bonDeCommande('Télécharger le bon de commande (PDF)', 'BonDeCommande');
+  bonDeCommande('Télécharger le bon de commande (PDF)', 'BonDeCommande'),
+  avoir("Télécharger l'avoir (PDF)", 'Avoir');
 
   final String libelleBouton;
   final String prefixeFichier;
@@ -20,8 +21,10 @@ enum DocumentCommande {
 
   static const _methodesAvecBon = {'cash', 'virement', 'hors_ligne'};
 
-  /// Le reçu remplace le bon de commande une fois la commande payée.
+  /// Le reçu remplace le bon de commande une fois la commande payée, et
+  /// l'avoir s'y substitue si elle est annulée puis remboursée.
   static DocumentCommande? disponible(Commande commande) {
+    if (commande.statutPaiement == 'rembourse') return avoir;
     if (commande.statutPaiement == 'paye') return recu;
     if (_methodesAvecBon.contains(commande.methodePaiement) &&
         commande.statut != 'annulee') {
@@ -33,6 +36,7 @@ enum DocumentCommande {
   String _chemin(String numero) => switch (this) {
         recu          => AppEndpoints.recuCommande(numero),
         bonDeCommande => AppEndpoints.bonDeCommande(numero),
+        avoir         => AppEndpoints.avoirCommande(numero),
       };
 
   /// Télécharge et ouvre le PDF ; sans lecteur PDF, propose le partage.

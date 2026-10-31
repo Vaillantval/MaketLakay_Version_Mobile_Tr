@@ -34,6 +34,8 @@ class AppEndpoints {
   static String recuCommande(String num) => '/api/auth/commandes/$num/recu/';
   static String bonDeCommande(String num) =>
       '/api/auth/commandes/$num/bon-de-commande/';
+  static String avoirCommande(String num) =>
+      '/api/auth/commandes/$num/avoir/';
 
   // Dashboard producteur
   static const String producteurStats    = '/api/auth/producteur/stats/';
