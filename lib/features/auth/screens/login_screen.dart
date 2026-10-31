@@ -204,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: TextButton(
                     onPressed: () {
                       final from = GoRouterState.of(context).uri.queryParameters['from'];
-                      context.go(Uri(path: '/register',
+                      context.push(Uri(path: '/register',
                           queryParameters: from == null ? null : {'from': from}).toString());
                     },
                     child: const Text(
