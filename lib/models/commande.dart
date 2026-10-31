@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_annotation_target
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../core/utils/json_converters.dart';
 
 part 'commande.freezed.dart';
 part 'commande.g.dart';
@@ -12,6 +13,9 @@ class Commande with _$Commande {
     // les listes acheteur/producteur (CommandeProducteurSerializer).
     @JsonKey(name: 'producteur_nom')   @Default('') String producteur,
     required String total,
+    // Part déjà réglée par le portefeuille (reste dû = total - cette part)
+    @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+    @Default(0) double montantWalletUtilise,
     required String statut,
     @JsonKey(name: 'statut_label')     required String statutLabel,
     @JsonKey(name: 'statut_paiement')  required String statutPaiement,

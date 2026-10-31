@@ -403,6 +403,8 @@ WalletDepotHorsLigne _$WalletDepotHorsLigneFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$WalletDepotHorsLigne {
+// Comptes de recharge, à préférer aux deux numéros (compatibilité)
+  List<Map<String, dynamic>> get moyens => throw _privateConstructorUsedError;
   @JsonKey(name: 'numero_moncash')
   String? get numeroMoncash => throw _privateConstructorUsedError;
   @JsonKey(name: 'numero_natcash')
@@ -425,7 +427,8 @@ abstract class $WalletDepotHorsLigneCopyWith<$Res> {
       _$WalletDepotHorsLigneCopyWithImpl<$Res, WalletDepotHorsLigne>;
   @useResult
   $Res call(
-      {@JsonKey(name: 'numero_moncash') String? numeroMoncash,
+      {List<Map<String, dynamic>> moyens,
+      @JsonKey(name: 'numero_moncash') String? numeroMoncash,
       @JsonKey(name: 'numero_natcash') String? numeroNatcash});
 }
 
@@ -445,10 +448,15 @@ class _$WalletDepotHorsLigneCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? moyens = null,
     Object? numeroMoncash = freezed,
     Object? numeroNatcash = freezed,
   }) {
     return _then(_value.copyWith(
+      moyens: null == moyens
+          ? _value.moyens
+          : moyens // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
       numeroMoncash: freezed == numeroMoncash
           ? _value.numeroMoncash
           : numeroMoncash // ignore: cast_nullable_to_non_nullable
@@ -470,7 +478,8 @@ abstract class _$$WalletDepotHorsLigneImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'numero_moncash') String? numeroMoncash,
+      {List<Map<String, dynamic>> moyens,
+      @JsonKey(name: 'numero_moncash') String? numeroMoncash,
       @JsonKey(name: 'numero_natcash') String? numeroNatcash});
 }
 
@@ -487,10 +496,15 @@ class __$$WalletDepotHorsLigneImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? moyens = null,
     Object? numeroMoncash = freezed,
     Object? numeroNatcash = freezed,
   }) {
     return _then(_$WalletDepotHorsLigneImpl(
+      moyens: null == moyens
+          ? _value._moyens
+          : moyens // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
       numeroMoncash: freezed == numeroMoncash
           ? _value.numeroMoncash
           : numeroMoncash // ignore: cast_nullable_to_non_nullable
@@ -507,11 +521,24 @@ class __$$WalletDepotHorsLigneImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$WalletDepotHorsLigneImpl implements _WalletDepotHorsLigne {
   const _$WalletDepotHorsLigneImpl(
-      {@JsonKey(name: 'numero_moncash') this.numeroMoncash,
-      @JsonKey(name: 'numero_natcash') this.numeroNatcash});
+      {final List<Map<String, dynamic>> moyens = const [],
+      @JsonKey(name: 'numero_moncash') this.numeroMoncash,
+      @JsonKey(name: 'numero_natcash') this.numeroNatcash})
+      : _moyens = moyens;
 
   factory _$WalletDepotHorsLigneImpl.fromJson(Map<String, dynamic> json) =>
       _$$WalletDepotHorsLigneImplFromJson(json);
+
+// Comptes de recharge, à préférer aux deux numéros (compatibilité)
+  final List<Map<String, dynamic>> _moyens;
+// Comptes de recharge, à préférer aux deux numéros (compatibilité)
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get moyens {
+    if (_moyens is EqualUnmodifiableListView) return _moyens;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_moyens);
+  }
 
   @override
   @JsonKey(name: 'numero_moncash')
@@ -522,7 +549,7 @@ class _$WalletDepotHorsLigneImpl implements _WalletDepotHorsLigne {
 
   @override
   String toString() {
-    return 'WalletDepotHorsLigne(numeroMoncash: $numeroMoncash, numeroNatcash: $numeroNatcash)';
+    return 'WalletDepotHorsLigne(moyens: $moyens, numeroMoncash: $numeroMoncash, numeroNatcash: $numeroNatcash)';
   }
 
   @override
@@ -530,6 +557,7 @@ class _$WalletDepotHorsLigneImpl implements _WalletDepotHorsLigne {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$WalletDepotHorsLigneImpl &&
+            const DeepCollectionEquality().equals(other._moyens, _moyens) &&
             (identical(other.numeroMoncash, numeroMoncash) ||
                 other.numeroMoncash == numeroMoncash) &&
             (identical(other.numeroNatcash, numeroNatcash) ||
@@ -538,7 +566,11 @@ class _$WalletDepotHorsLigneImpl implements _WalletDepotHorsLigne {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, numeroMoncash, numeroNatcash);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_moyens),
+      numeroMoncash,
+      numeroNatcash);
 
   /// Create a copy of WalletDepotHorsLigne
   /// with the given fields replaced by the non-null parameter values.
@@ -560,13 +592,17 @@ class _$WalletDepotHorsLigneImpl implements _WalletDepotHorsLigne {
 
 abstract class _WalletDepotHorsLigne implements WalletDepotHorsLigne {
   const factory _WalletDepotHorsLigne(
-          {@JsonKey(name: 'numero_moncash') final String? numeroMoncash,
+          {final List<Map<String, dynamic>> moyens,
+          @JsonKey(name: 'numero_moncash') final String? numeroMoncash,
           @JsonKey(name: 'numero_natcash') final String? numeroNatcash}) =
       _$WalletDepotHorsLigneImpl;
 
   factory _WalletDepotHorsLigne.fromJson(Map<String, dynamic> json) =
       _$WalletDepotHorsLigneImpl.fromJson;
 
+// Comptes de recharge, à préférer aux deux numéros (compatibilité)
+  @override
+  List<Map<String, dynamic>> get moyens;
   @override
   @JsonKey(name: 'numero_moncash')
   String? get numeroMoncash;

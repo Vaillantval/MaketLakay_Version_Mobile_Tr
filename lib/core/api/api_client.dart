@@ -197,6 +197,13 @@ class ApiClient {
     Options? options,
   }) => _dio.delete(path, options: options);
 
+  // Fichier binaire (PDF) : passe par Dio pour que le jeton suive, un
+  // navigateur ne l'aurait pas
+  Future<Response<List<int>>> telecharger(String path) => _dio.get<List<int>>(
+        path,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
   // Multipart (upload photos)
   Future<Response> postMultipart(
     String path,

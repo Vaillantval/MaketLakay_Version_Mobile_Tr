@@ -26,7 +26,10 @@ mixin _$Commande {
 // les listes acheteur/producteur (CommandeProducteurSerializer).
   @JsonKey(name: 'producteur_nom')
   String get producteur => throw _privateConstructorUsedError;
-  String get total => throw _privateConstructorUsedError;
+  String get total =>
+      throw _privateConstructorUsedError; // Part déjà réglée par le portefeuille (reste dû = total - cette part)
+  @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+  double get montantWalletUtilise => throw _privateConstructorUsedError;
   String get statut => throw _privateConstructorUsedError;
   @JsonKey(name: 'statut_label')
   String get statutLabel => throw _privateConstructorUsedError;
@@ -63,6 +66,8 @@ abstract class $CommandeCopyWith<$Res> {
       {@JsonKey(name: 'numero_commande') String numeroCommande,
       @JsonKey(name: 'producteur_nom') String producteur,
       String total,
+      @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+      double montantWalletUtilise,
       String statut,
       @JsonKey(name: 'statut_label') String statutLabel,
       @JsonKey(name: 'statut_paiement') String statutPaiement,
@@ -92,6 +97,7 @@ class _$CommandeCopyWithImpl<$Res, $Val extends Commande>
     Object? numeroCommande = null,
     Object? producteur = null,
     Object? total = null,
+    Object? montantWalletUtilise = null,
     Object? statut = null,
     Object? statutLabel = null,
     Object? statutPaiement = null,
@@ -115,6 +121,10 @@ class _$CommandeCopyWithImpl<$Res, $Val extends Commande>
           ? _value.total
           : total // ignore: cast_nullable_to_non_nullable
               as String,
+      montantWalletUtilise: null == montantWalletUtilise
+          ? _value.montantWalletUtilise
+          : montantWalletUtilise // ignore: cast_nullable_to_non_nullable
+              as double,
       statut: null == statut
           ? _value.statut
           : statut // ignore: cast_nullable_to_non_nullable
@@ -167,6 +177,8 @@ abstract class _$$CommandeImplCopyWith<$Res>
       {@JsonKey(name: 'numero_commande') String numeroCommande,
       @JsonKey(name: 'producteur_nom') String producteur,
       String total,
+      @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+      double montantWalletUtilise,
       String statut,
       @JsonKey(name: 'statut_label') String statutLabel,
       @JsonKey(name: 'statut_paiement') String statutPaiement,
@@ -194,6 +206,7 @@ class __$$CommandeImplCopyWithImpl<$Res>
     Object? numeroCommande = null,
     Object? producteur = null,
     Object? total = null,
+    Object? montantWalletUtilise = null,
     Object? statut = null,
     Object? statutLabel = null,
     Object? statutPaiement = null,
@@ -217,6 +230,10 @@ class __$$CommandeImplCopyWithImpl<$Res>
           ? _value.total
           : total // ignore: cast_nullable_to_non_nullable
               as String,
+      montantWalletUtilise: null == montantWalletUtilise
+          ? _value.montantWalletUtilise
+          : montantWalletUtilise // ignore: cast_nullable_to_non_nullable
+              as double,
       statut: null == statut
           ? _value.statut
           : statut // ignore: cast_nullable_to_non_nullable
@@ -264,6 +281,8 @@ class _$CommandeImpl implements _Commande {
       {@JsonKey(name: 'numero_commande') required this.numeroCommande,
       @JsonKey(name: 'producteur_nom') this.producteur = '',
       required this.total,
+      @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+      this.montantWalletUtilise = 0,
       required this.statut,
       @JsonKey(name: 'statut_label') required this.statutLabel,
       @JsonKey(name: 'statut_paiement') required this.statutPaiement,
@@ -288,6 +307,10 @@ class _$CommandeImpl implements _Commande {
   final String producteur;
   @override
   final String total;
+// Part déjà réglée par le portefeuille (reste dû = total - cette part)
+  @override
+  @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+  final double montantWalletUtilise;
   @override
   final String statut;
   @override
@@ -322,7 +345,7 @@ class _$CommandeImpl implements _Commande {
 
   @override
   String toString() {
-    return 'Commande(numeroCommande: $numeroCommande, producteur: $producteur, total: $total, statut: $statut, statutLabel: $statutLabel, statutPaiement: $statutPaiement, methodePaiement: $methodePaiement, modeLivraison: $modeLivraison, adresseLivraison: $adresseLivraison, notesAcheteur: $notesAcheteur, createdAt: $createdAt, details: $details)';
+    return 'Commande(numeroCommande: $numeroCommande, producteur: $producteur, total: $total, montantWalletUtilise: $montantWalletUtilise, statut: $statut, statutLabel: $statutLabel, statutPaiement: $statutPaiement, methodePaiement: $methodePaiement, modeLivraison: $modeLivraison, adresseLivraison: $adresseLivraison, notesAcheteur: $notesAcheteur, createdAt: $createdAt, details: $details)';
   }
 
   @override
@@ -335,6 +358,8 @@ class _$CommandeImpl implements _Commande {
             (identical(other.producteur, producteur) ||
                 other.producteur == producteur) &&
             (identical(other.total, total) || other.total == total) &&
+            (identical(other.montantWalletUtilise, montantWalletUtilise) ||
+                other.montantWalletUtilise == montantWalletUtilise) &&
             (identical(other.statut, statut) || other.statut == statut) &&
             (identical(other.statutLabel, statutLabel) ||
                 other.statutLabel == statutLabel) &&
@@ -360,6 +385,7 @@ class _$CommandeImpl implements _Commande {
       numeroCommande,
       producteur,
       total,
+      montantWalletUtilise,
       statut,
       statutLabel,
       statutPaiement,
@@ -391,6 +417,8 @@ abstract class _Commande implements Commande {
       {@JsonKey(name: 'numero_commande') required final String numeroCommande,
       @JsonKey(name: 'producteur_nom') final String producteur,
       required final String total,
+      @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+      final double montantWalletUtilise,
       required final String statut,
       @JsonKey(name: 'statut_label') required final String statutLabel,
       @JsonKey(name: 'statut_paiement') required final String statutPaiement,
@@ -413,7 +441,11 @@ abstract class _Commande implements Commande {
   @JsonKey(name: 'producteur_nom')
   String get producteur;
   @override
-  String get total;
+  String
+      get total; // Part déjà réglée par le portefeuille (reste dû = total - cette part)
+  @override
+  @JsonKey(name: 'montant_wallet_utilise', fromJson: jsonToDouble)
+  double get montantWalletUtilise;
   @override
   String get statut;
   @override

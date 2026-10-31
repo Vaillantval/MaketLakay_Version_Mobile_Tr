@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/sons/sons_app.dart';
 import '../../../core/offline/connectivity_service.dart';
@@ -9,6 +12,7 @@ import '../providers/commande_provider.dart';
 import '../providers/adresse_provider.dart';
 import '../providers/panier_provider.dart';
 import '../providers/wallet_provider.dart';
+import '../../../shared/widgets/compte_depot.dart';
 import '../../../shared/widgets/htg_text.dart';
 import '../../../shared/widgets/logo_paiement.dart';
 import '../../../shared/ui/ui.dart';
@@ -27,6 +31,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String _notes            = '';
   bool   _isLoading        = false;
   bool   _walletHybride    = false; // utiliser le solde en complément d'une autre méthode
+  XFile? _preuve;                   // virement / dépôt hors ligne
 
   final _notesCtrl = TextEditingController();
 
@@ -34,6 +39,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void dispose() {
     _notesCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _choisirPreuve(ImageSource source) async {
+    final image = await ImagePicker()
+        .pickImage(source: source, imageQuality: 80, maxWidth: 2000);
+    if (image != null) setState(() => _preuve = image);
   }
 
   Future<void> _commander() async {
@@ -45,6 +56,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
+    if (_methodePaiement == 'hors_ligne' && _preuve == null) {
+      afficherMessage(context, 'Joignez la preuve de votre virement ou dépôt',
+          succes: false);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final result = await ref.read(commandesProvider.notifier).passer(
@@ -52,6 +69,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       modeLivraison:   _modeLivraison,
       adresseId:       _adresseId,
       notes:           _notes,
+      preuve:          _methodePaiement == 'hors_ligne' ? _preuve : null,
     );
 
     if (!mounted) return;
@@ -137,7 +155,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String _libelleMethode(String m) {
     switch (m) {
       case 'moncash':    return 'MonCash';
-      case 'hors_ligne': return 'virement / dépôt';
+      case 'hors_ligne': return 'virement ou dépôt';
       default:           return 'espèces';
     }
   }
@@ -179,7 +197,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     for (final m in [
                       ('cash',      'Espèces'),
                       ('moncash',   'MonCash'),
-                      ('hors_ligne','Virement / Dépôt'),
+                      ('hors_ligne','Hors ligne'),
                     ])
                       RadioListTile<String>(
                         value: m.$1,
@@ -190,9 +208,35 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             Text(m.$2),
                           ],
                         ),
+                        subtitle: m.$1 == 'hors_ligne'
+                            ? const Text('Virement ou dépôt, avec preuve')
+                            : null,
                         activeColor: AppColors.noir,
                         contentPadding: EdgeInsets.zero,
                       ),
+
+                    // Futur paiement direct, comme par carte : à ne pas
+                    // confondre avec le virement « Hors ligne »
+                    const RadioListTile<String>(
+                      value: 'compte_bancaire',
+                      enabled: false,
+                      title: Row(
+                        children: [
+                          LogoPaiement('compte_bancaire'),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text('Compte bancaire (En ligne)',
+                                style: TextStyle(color: AppColors.grisTexte)),
+                          ),
+                          Text('Bientôt',
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.grisTexte)),
+                        ],
+                      ),
+                      subtitle: Text(
+                          'Paiement bancaire en direct, comme par carte'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
 
                     // ── Portefeuille (online + actif uniquement) ──
                     if (walletDisponible)
@@ -253,6 +297,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             style: const TextStyle(fontSize: 13),
                           ),
                         ),
+                      ),
+
+                    // ── Hors ligne : montant, comptes, preuve ──
+                    if (_methodePaiement == 'hors_ligne')
+                      _PanneauHorsLigne(
+                        montant: _walletHybride ? total - soldeWallet : total,
+                        comptes: ref.watch(moyensDepotProvider).valueOrNull ?? const [],
+                        preuve: _preuve,
+                        onChoisir: _choisirPreuve,
+                        onRetirer: () => setState(() => _preuve = null),
                       ),
                   ],
                 ),
@@ -399,6 +453,125 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Paiement hors ligne : le montant, les comptes configurés par
+/// l'administration (rien : texte seul), puis la preuve du virement ou dépôt.
+class _PanneauHorsLigne extends StatelessWidget {
+  final double montant;
+  final List<Map<String, dynamic>> comptes;
+  final XFile? preuve;
+  final ValueChanged<ImageSource> onChoisir;
+  final VoidCallback onRetirer;
+  const _PanneauHorsLigne({
+    required this.montant,
+    required this.comptes,
+    required this.preuve,
+    required this.onChoisir,
+    required this.onRetirer,
+  });
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 8, bottom: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Montant à payer',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                HtgText(montant, fontSize: 18),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Effectuez le virement ou le dépôt, puis joignez la preuve '
+              '(reçu, capture). Votre commande sera confirmée après '
+              'vérification.',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+            for (final compte in comptes)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: CompteDepotCarte(compte),
+              ),
+            const SizedBox(height: 10),
+            _Preuve(preuve: preuve, onChoisir: onChoisir, onRetirer: onRetirer),
+          ],
+        ),
+      );
+}
+
+class _Preuve extends StatelessWidget {
+  final XFile? preuve;
+  final ValueChanged<ImageSource> onChoisir;
+  final VoidCallback onRetirer;
+  const _Preuve({required this.preuve, required this.onChoisir, required this.onRetirer});
+
+  @override
+  Widget build(BuildContext context) {
+    final image = preuve;
+    if (image == null) {
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => onChoisir(ImageSource.camera),
+              icon: const Icon(Icons.photo_camera_outlined, size: 18),
+              label: const Text('Photo'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => onChoisir(ImageSource.gallery),
+              icon: const Icon(Icons.image_outlined, size: 18),
+              label: const Text('Galerie'),
+            ),
+          ),
+        ],
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.blanc,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.grisBord),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.file(File(image.path),
+                width: 52, height: 52, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(
+                    width: 52, height: 52,
+                    child: Icon(Icons.description_outlined))),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Preuve jointe',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                Text('Elle partira avec la commande',
+                    style: TextStyle(fontSize: 12, color: AppColors.grisTexte)),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Retirer la preuve',
+            onPressed: onRetirer,
+            icon: const Icon(Icons.close_rounded),
+          ),
+        ],
       ),
     );
   }

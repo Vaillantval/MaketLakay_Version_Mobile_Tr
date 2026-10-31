@@ -11,6 +11,9 @@ _$CommandeImpl _$$CommandeImplFromJson(Map<String, dynamic> json) =>
       numeroCommande: json['numero_commande'] as String,
       producteur: json['producteur_nom'] as String? ?? '',
       total: json['total'] as String,
+      montantWalletUtilise: json['montant_wallet_utilise'] == null
+          ? 0
+          : jsonToDouble(json['montant_wallet_utilise']),
       statut: json['statut'] as String,
       statutLabel: json['statut_label'] as String,
       statutPaiement: json['statut_paiement'] as String,
@@ -30,6 +33,7 @@ Map<String, dynamic> _$$CommandeImplToJson(_$CommandeImpl instance) =>
       'numero_commande': instance.numeroCommande,
       'producteur_nom': instance.producteur,
       'total': instance.total,
+      'montant_wallet_utilise': instance.montantWalletUtilise,
       'statut': instance.statut,
       'statut_label': instance.statutLabel,
       'statut_paiement': instance.statutPaiement,

@@ -32,6 +32,8 @@ class WalletParrainage with _$WalletParrainage {
 @freezed
 class WalletDepotHorsLigne with _$WalletDepotHorsLigne {
   const factory WalletDepotHorsLigne({
+    // Comptes de recharge, à préférer aux deux numéros (compatibilité)
+    @Default([]) List<Map<String, dynamic>> moyens,
     @JsonKey(name: 'numero_moncash') String? numeroMoncash,
     @JsonKey(name: 'numero_natcash') String? numeroNatcash,
   }) = _WalletDepotHorsLigne;

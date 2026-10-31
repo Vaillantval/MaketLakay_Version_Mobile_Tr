@@ -1,13 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/api/api_client.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/document_commande.dart';
 import '../../../core/utils/format_utils.dart';
+import '../../../models/commande.dart';
 import '../../../shared/ui/ui.dart';
 import '../../../shared/widgets/empty_state.dart';
 import '../providers/commande_provider.dart';
 import '../widgets/commande_statut_badge.dart';
 import '../../../shared/widgets/loading_widget.dart';
+
+class _BoutonDocument extends ConsumerStatefulWidget {
+  final Commande commande;
+  final DocumentCommande document;
+  const _BoutonDocument(this.commande, this.document);
+
+  @override
+  ConsumerState<_BoutonDocument> createState() => _BoutonDocumentState();
+}
+
+class _BoutonDocumentState extends ConsumerState<_BoutonDocument> {
+  bool _enCours = false;
+
+  Future<void> _telecharger() async {
+    setState(() => _enCours = true);
+    final erreur = await widget.document.ouvrir(
+        ref.read(apiClientProvider), widget.commande.numeroCommande);
+    if (!mounted) return;
+    setState(() => _enCours = false);
+    if (erreur != null) afficherMessage(context, erreur, succes: false);
+  }
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+        onPressed: _enCours ? null : _telecharger,
+        icon: _enCours
+            ? const SizedBox(
+                width: 18, height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.picture_as_pdf_outlined, size: 20),
+        label: Text(widget.document.libelleBouton),
+      );
+}
 
 class CommandeDetailScreen extends ConsumerWidget {
   final String numero;
@@ -138,9 +174,26 @@ class CommandeDetailScreen extends ConsumerWidget {
                         commande.modeLivraison ?? '—'),
                     LigneInfo(Icons.payments_outlined, 'Paiement',
                         commande.statutPaiement),
+                    if (commande.montantWalletUtilise > 0) ...[
+                      LigneInfo(Icons.account_balance_wallet_outlined,
+                          'Payé par portefeuille',
+                          FormatUtils.htg(commande.montantWalletUtilise)),
+                      if (commande.statutPaiement != 'paye')
+                        LigneInfo(Icons.pending_outlined, 'Reste à payer',
+                            FormatUtils.htg(
+                                (double.tryParse(commande.total) ?? 0) -
+                                    commande.montantWalletUtilise)),
+                    ],
                   ],
                 ),
               ),
+
+              // ── Reçu ou bon de commande ─────────────────────────
+              if (DocumentCommande.disponible(commande) case final document?)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: _BoutonDocument(commande, document),
+                ),
             ],
           );
         },

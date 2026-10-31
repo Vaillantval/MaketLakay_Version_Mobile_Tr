@@ -11,6 +11,7 @@ import '../../../core/offline/connectivity_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../models/wallet.dart';
 import '../providers/wallet_provider.dart';
+import '../../../shared/widgets/compte_depot.dart';
 import '../../../shared/widgets/logo_paiement.dart';
 import 'wallet_screen.dart' show EcranWalletHorsLigne;
 
@@ -336,6 +337,11 @@ class _OngletHorsLigne extends StatelessWidget {
   final VoidCallback onChoisirPreuve;
   final VoidCallback onSoumettre;
 
+  List<Map<String, dynamic>> get _moyens => depot?.moyens ?? const [];
+  // Compatibilité : numéros seuls, si aucun compte n'est configuré
+  String get _moncash => _moyens.isEmpty ? depot?.numeroMoncash ?? '' : '';
+  String get _natcash => _moyens.isEmpty ? depot?.numeroNatcash ?? '' : '';
+
   const _OngletHorsLigne({
     required this.montantCtrl,
     required this.preuve,
@@ -351,7 +357,12 @@ class _OngletHorsLigne extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (depot?.numeroMoncash != null || depot?.numeroNatcash != null)
+        for (final compte in _moyens)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: CompteDepotCarte(compte),
+          ),
+        if (_moncash.isNotEmpty || _natcash.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
@@ -366,24 +377,24 @@ class _OngletHorsLigne extends StatelessWidget {
                 const Text('Numéros de dépôt',
                     style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.noir)),
                 const SizedBox(height: 8),
-                if (depot?.numeroMoncash != null)
+                if (_moncash.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Row(
                       children: [
                         const LogoPaiement('moncash', taille: 20),
                         const SizedBox(width: 8),
-                        Text('MonCash : ${depot!.numeroMoncash}',
+                        Text('MonCash : $_moncash',
                             style: const TextStyle(fontSize: 13)),
                       ],
                     ),
                   ),
-                if (depot?.numeroNatcash != null)
+                if (_natcash.isNotEmpty)
                   Row(
                     children: [
                       const LogoPaiement('natcash', taille: 20),
                       const SizedBox(width: 8),
-                      Text('NatCash : ${depot!.numeroNatcash}',
+                      Text('NatCash : $_natcash',
                           style: const TextStyle(fontSize: 13)),
                     ],
                   ),

@@ -31,6 +31,9 @@ class AppEndpoints {
   // Commandes acheteur
   static const String mesCommandes      = '/api/auth/commandes/';
   static String maCommande(String num)  => '/api/auth/commandes/$num/';
+  static String recuCommande(String num) => '/api/auth/commandes/$num/recu/';
+  static String bonDeCommande(String num) =>
+      '/api/auth/commandes/$num/bon-de-commande/';
 
   // Dashboard producteur
   static const String producteurStats    = '/api/auth/producteur/stats/';
@@ -66,6 +69,7 @@ class AppEndpoints {
   static const String soumettrePreuve  = '/api/payments/preuve/';
   static const String verifierPaiement = '/api/payments/verifier/';
   static const String mesPaiements     = '/api/payments/mes-paiements/';
+  static const String instructionsPaiement = '/api/payments/instructions/';
   static const String validerVoucher   = '/api/payments/voucher/valider/';
   static const String mesVouchers      = '/api/payments/voucher/mes-vouchers/';
 

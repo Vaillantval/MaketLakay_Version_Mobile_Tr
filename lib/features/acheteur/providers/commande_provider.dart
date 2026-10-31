@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../models/commande.dart';
@@ -42,6 +44,7 @@ class CommandeNotifier
     String  ville        = '',
     String  departement  = '',
     String  notes        = '',
+    XFile?  preuve,
   }) async {
     try {
       final body = <String, dynamic>{
@@ -57,7 +60,16 @@ class CommandeNotifier
         body['departement_livraison']  = departement;
       }
 
-      final res  = await _api.post(AppEndpoints.commander, data: body);
+      final res = preuve != null
+          ? await _api.postMultipart(
+              AppEndpoints.commander,
+              FormData.fromMap({
+                ...body,
+                'preuve_paiement': await MultipartFile.fromFile(
+                    preuve.path, filename: preuve.name),
+              }),
+            )
+          : await _api.post(AppEndpoints.commander, data: body);
       final data = res.data as Map<String, dynamic>;
       if (data['success'] == true) {
         await charger(); // Rafraîchir la liste
@@ -68,6 +80,21 @@ class CommandeNotifier
     }
   }
 }
+
+/// Comptes de virement / dépôt pour payer une commande hors ligne
+/// (GET /api/payments/instructions/, public). Liste vide : rien de configuré.
+final moyensDepotProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final api = ref.read(apiClientProvider);
+  try {
+    final res  = await api.get(AppEndpoints.instructionsPaiement);
+    final data = res.data as Map<String, dynamic>;
+    if (data['success'] == true && data['data'] is List) {
+      return List<Map<String, dynamic>>.from(
+          (data['data'] as List).whereType<Map>().map((e) => Map<String, dynamic>.from(e)));
+    }
+  } catch (_) {}
+  return const [];
+});
 
 // Détail d'une commande
 final commandeDetailProvider =

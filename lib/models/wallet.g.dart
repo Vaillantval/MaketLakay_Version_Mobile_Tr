@@ -39,6 +39,10 @@ Map<String, dynamic> _$$WalletParrainageImplToJson(
 _$WalletDepotHorsLigneImpl _$$WalletDepotHorsLigneImplFromJson(
         Map<String, dynamic> json) =>
     _$WalletDepotHorsLigneImpl(
+      moyens: (json['moyens'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          const [],
       numeroMoncash: json['numero_moncash'] as String?,
       numeroNatcash: json['numero_natcash'] as String?,
     );
@@ -46,6 +50,7 @@ _$WalletDepotHorsLigneImpl _$$WalletDepotHorsLigneImplFromJson(
 Map<String, dynamic> _$$WalletDepotHorsLigneImplToJson(
         _$WalletDepotHorsLigneImpl instance) =>
     <String, dynamic>{
+      'moyens': instance.moyens,
       'numero_moncash': instance.numeroMoncash,
       'numero_natcash': instance.numeroNatcash,
     };
