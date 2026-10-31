@@ -90,7 +90,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           icone: Icons.inventory_2_outlined,
           tuile: AppColors.orange,
           titre: '${s.alertesStock} alerte(s) de stock',
-          onTap: () => context.go('/admin/stocks'),
+          onTap: () => context.push('/admin/stocks'),
         ),
       if (s.commandesLitige > 0)
         LigneReglage(
@@ -104,7 +104,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           icone: Icons.schedule_rounded,
           tuile: AppColors.rouge,
           titre: '${s.collectesEnRetard} collecte(s) en retard',
-          onTap: () => context.go('/admin/collectes'),
+          onTap: () => context.push('/admin/collectes'),
         ),
     ];
 
@@ -200,7 +200,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           precision: '${s.produitsEpuises} épuisé(s)',
           icone: Icons.inventory_2_outlined,
           couleur: AppColors.vertVif,
-          onTap: () => context.go('/admin/catalogue'),
+          onTap: () => context.push('/admin/catalogue'),
         ),
       ]),
 
@@ -225,7 +225,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       // ── Utilisateurs ────────────────────────────────────────
       TitreSection('Utilisateurs',
           action: 'Voir tout',
-          onAction: () => context.go('/admin/utilisateurs')),
+          onAction: () => context.push('/admin/utilisateurs')),
       Surface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +259,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 
       // ── Logistique ──────────────────────────────────────────
       TitreSection('Collectes et stock',
-          action: 'Voir tout', onAction: () => context.go('/admin/collectes')),
+          action: 'Voir tout', onAction: () => context.push('/admin/collectes')),
       GrilleIndicateurs([
         CarteIndicateur(
           libelle: 'Collectes planifiées',
@@ -267,21 +267,21 @@ class AdminDashboardScreen extends ConsumerWidget {
           precision: '${s.collectesEnCours} en cours',
           icone: Icons.event_outlined,
           couleur: AppColors.bleu,
-          onTap: () => context.go('/admin/collectes'),
+          onTap: () => context.push('/admin/collectes'),
         ),
         CarteIndicateur(
           libelle: 'Collectes en retard',
           valeur: '${s.collectesEnRetard}',
           icone: Icons.schedule_rounded,
           couleur: AppColors.rouge,
-          onTap: () => context.go('/admin/collectes'),
+          onTap: () => context.push('/admin/collectes'),
         ),
         CarteIndicateur(
           libelle: 'Alertes de stock',
           valeur: '${s.alertesStock}',
           icone: Icons.warning_amber_rounded,
           couleur: AppColors.orange,
-          onTap: () => context.go('/admin/stocks'),
+          onTap: () => context.push('/admin/stocks'),
         ),
         CarteIndicateur(
           libelle: 'Bons actifs',

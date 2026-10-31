@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/format_utils.dart';
+import '../../../models/commande.dart';
 import '../providers/commandes_producteur_provider.dart';
+import '../widgets/actions_commande.dart';
 import '../../acheteur/widgets/commande_statut_badge.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -65,11 +67,21 @@ class CommandeDetailScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Column(
                   children: [
+                    if (commande.acheteurNom?.isNotEmpty == true)
+                      LigneInfo(Icons.person_outline_rounded, 'Acheteur',
+                          commande.acheteurNom!),
+                    if (commande.acheteurTel?.isNotEmpty == true)
+                      LigneInfo(Icons.phone_outlined, 'Téléphone',
+                          commande.acheteurTel!),
                     LigneInfo(Icons.payments_outlined, 'Paiement',
-                        commande.methodePaiement),
+                        commande.methodePaiementLabel ?? commande.methodePaiement),
+                    if (commande.paiementLabel != null)
+                      LigneInfo(Icons.verified_outlined, 'État du paiement',
+                          commande.paiementLabel!),
                     if (commande.modeLivraison != null)
                       LigneInfo(Icons.local_shipping_outlined, 'Livraison',
-                          commande.modeLivraison!),
+                          libellesModeLivraison[commande.modeLivraison] ??
+                              commande.modeLivraison!),
                     if (commande.adresseLivraison != null)
                       LigneInfo(Icons.place_outlined, 'Adresse',
                           commande.adresseLivraison!),
@@ -84,6 +96,13 @@ class CommandeDetailScreen extends ConsumerWidget {
                 GroupeLignes([
                   for (final d in commande.details) _ArticleTile(detail: d),
                 ]),
+              ],
+              if (commande.actionsPossibles.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                ActionsCommande(
+                  numero:  numero,
+                  actions: commande.actionsPossibles,
+                ),
               ],
             ],
           );
@@ -110,7 +129,7 @@ class _ArticleTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                detail['produit_nom']?.toString() ?? '—',
+                (detail['produit'] ?? detail['produit_nom'])?.toString() ?? '—',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               Text(

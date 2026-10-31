@@ -205,6 +205,15 @@ class ApiClient {
       );
 
   // Multipart (upload photos)
+  Future<Response> patchMultipart(
+    String path,
+    FormData formData,
+  ) => _dio.patch(
+        path,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+
   Future<Response> postMultipart(
     String path,
     FormData formData,

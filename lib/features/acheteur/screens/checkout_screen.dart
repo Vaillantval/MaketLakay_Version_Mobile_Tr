@@ -62,12 +62,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
+    // La première adresse est affichée cochée tant que rien n'est choisi :
+    // c'est elle qui part avec la commande
+    final adresses = ref.read(adressesProvider).valueOrNull ?? const [];
+    final adresseId = _adresseId ?? adresses.firstOrNull?.id;
+    if (_modeLivraison == 'domicile' && adresseId == null) {
+      afficherMessage(context, 'Ajoutez une adresse de livraison', succes: false);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final result = await ref.read(commandesProvider.notifier).passer(
       methodePaiement: _methodePaiement,
       modeLivraison:   _modeLivraison,
-      adresseId:       _adresseId,
+      adresseId:       adresseId,
       notes:           _notes,
       preuve:          _methodePaiement == 'hors_ligne' ? _preuve : null,
     );
@@ -80,6 +89,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           succes: false);
       return;
     }
+
+    // Le serveur vide le panier à la commande : badge à remettre à jour
+    ref.read(panierProvider.notifier).charger();
 
     final data   = result!['data'] as Map<String, dynamic>;
     final numero = data['numero_commande']?.toString();

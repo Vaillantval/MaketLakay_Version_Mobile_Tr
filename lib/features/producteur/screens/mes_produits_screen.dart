@@ -19,7 +19,7 @@ class MesProduitsScreen extends ConsumerWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/producteur/produit/nouveau'),
+        onPressed: () => context.push('/producteur/produit/nouveau'),
         icon: const Icon(Icons.add_rounded),
         label: const Text('Produit'),
       ),
@@ -42,7 +42,7 @@ class MesProduitsScreen extends ConsumerWidget {
                       description: 'Ajoutez votre premier produit.',
                       boutonLabel: 'Ajouter un produit',
                       onBouton: () =>
-                          context.go('/producteur/produit/nouveau'),
+                          context.push('/producteur/produit/nouveau'),
                     );
                   }
 
@@ -63,7 +63,7 @@ class MesProduitsScreen extends ConsumerWidget {
                               color: AppColors.grisLeger),
                         );
                         return Surface(
-                          onTap: () => context.go(
+                          onTap: () => context.push(
                             '/producteur/produit/${p.slug}/modifier',
                           ),
                           padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
@@ -112,7 +112,7 @@ class MesProduitsScreen extends ConsumerWidget {
                                 icon: const Icon(Icons.more_vert_rounded,
                                     color: AppColors.grisTexte),
                                 onSelected: (v) => v == 'modifier'
-                                    ? context.go('/producteur/produit/${p.slug}/modifier')
+                                    ? context.push('/producteur/produit/${p.slug}/modifier')
                                     : _confirmerSuppression(context, ref, p.slug),
                                 itemBuilder: (_) => const [
                                   PopupMenuItem(value: 'modifier', child: Text('Modifier')),
@@ -139,17 +139,17 @@ class MesProduitsScreen extends ConsumerWidget {
   ) {
     showDialog(
       context: ctx,
-      builder: (_) => AlertDialog(
+      builder: (dialogue) => AlertDialog(
         title:   const Text('Supprimer ce produit ?'),
         content: const Text('Cette action est irréversible.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => Navigator.pop(dialogue),
             child: const Text('Annuler'),
           ),
           FilledButton(
             onPressed: () async {
-              Navigator.pop(ctx);
+              Navigator.pop(dialogue);
               await ref
                   .read(mesProduitsProvider.notifier)
                   .supprimer(slug);

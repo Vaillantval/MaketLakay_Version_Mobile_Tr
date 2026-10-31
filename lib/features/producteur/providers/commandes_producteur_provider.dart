@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/utils/api_error.dart';
 import '../../../models/commande.dart';
 import '../../../providers/entreprise_provider.dart';
 
@@ -57,7 +58,10 @@ class CommandesProducteurNotifier
       if (data['success'] == true) await charger();
       return data;
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      return {
+        'success': false,
+        'error': messageErreurApi(e, 'La commande n’a pas pu être mise à jour.'),
+      };
     }
   }
 }

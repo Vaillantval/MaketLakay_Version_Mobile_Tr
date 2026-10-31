@@ -11,6 +11,16 @@ final mesProduitsProvider =
   return MesProduitsNotifier(ref.read(apiClientProvider));
 });
 
+/// Fiche complète d'un produit à modifier (description, origine, seuil…
+/// absents de la liste).
+final monProduitProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>?, String>((ref, slug) async {
+  ref.watch(entrepriseActiveIdProvider);
+  final res  = await ref.read(apiClientProvider).get(AppEndpoints.monProduit(slug));
+  final data = res.data as Map<String, dynamic>;
+  return data['success'] == true ? data['data'] as Map<String, dynamic> : null;
+});
+
 class MesProduitsNotifier
     extends StateNotifier<AsyncValue<List<Produit>>> {
   final ApiClient _api;
@@ -60,7 +70,7 @@ class MesProduitsNotifier
     try {
       if (imagePath != null) {
         final formData = await _buildFormData(body, imagePath);
-        final res  = await _api.postMultipart(AppEndpoints.monProduit(slug), formData);
+        final res  = await _api.patchMultipart(AppEndpoints.monProduit(slug), formData);
         final data = res.data as Map<String, dynamic>;
         if (data['success'] == true) { await charger(); return true; }
         return false;

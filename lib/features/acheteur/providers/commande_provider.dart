@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/utils/api_error.dart';
+import '../../../core/utils/image_utils.dart';
 import '../../../models/commande.dart';
 import '../../../providers/auth_provider.dart';
 
@@ -66,7 +68,7 @@ class CommandeNotifier
               FormData.fromMap({
                 ...body,
                 'preuve_paiement': await MultipartFile.fromFile(
-                    preuve.path, filename: preuve.name),
+                    preuve.path, filename: nomImageEnvoi(preuve)),
               }),
             )
           : await _api.post(AppEndpoints.commander, data: body);
@@ -76,7 +78,10 @@ class CommandeNotifier
       }
       return data;
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      return {
+        'success': false,
+        'error': messageErreurApi(e, 'La commande n’a pas pu être envoyée. Réessayez.'),
+      };
     }
   }
 }

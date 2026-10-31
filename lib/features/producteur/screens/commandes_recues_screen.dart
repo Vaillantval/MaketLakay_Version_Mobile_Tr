@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/format_utils.dart';
 import '../providers/commandes_producteur_provider.dart';
+import '../widgets/actions_commande.dart';
 import '../../acheteur/widgets/commande_statut_badge.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../shared/widgets/empty_state.dart';
@@ -27,6 +28,7 @@ class _CommandesRecuesScreenState
     ('en_attente',     'En attente'),
     ('confirmee',      'Confirmées'),
     ('en_preparation', 'En préparation'),
+    ('prete',          'Prêtes'),
     ('livree',         'Livrées'),
     ('annulee',        'Annulées'),
   ];
@@ -94,7 +96,7 @@ class _CommandesList extends ConsumerWidget {
             itemBuilder: (_, i) {
               final c = commandes[i];
               return Surface(
-                onTap: () => context.go(
+                onTap: () => context.push(
                   '/producteur/commande/${c.numeroCommande}',
                 ),
                 padding: const EdgeInsets.all(14),
@@ -150,8 +152,8 @@ class _CommandesList extends ConsumerWidget {
                       Row(children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () =>
-                                _annuler(context, ref, c.numeroCommande),
+                            onPressed: () => appliquerActionCommande(
+                                context, ref, c.numeroCommande, 'annuler'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.rouge,
                             ),
@@ -161,8 +163,8 @@ class _CommandesList extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: FilledButton(
-                            onPressed: () =>
-                                _confirmer(context, ref, c.numeroCommande),
+                            onPressed: () => appliquerActionCommande(
+                                context, ref, c.numeroCommande, 'confirmer'),
                             child: const Text('Confirmer'),
                           ),
                         ),
@@ -176,60 +178,5 @@ class _CommandesList extends ConsumerWidget {
         );
       },
     );
-  }
-
-  Future<void> _confirmer(
-    BuildContext ctx, WidgetRef ref, String numero,
-  ) async {
-    final result = await ref
-        .read(commandesProducteurProvider('').notifier)
-        .changerStatut(numero, 'confirmer');
-    if (ctx.mounted) {
-      final ok = result?['success'] == true;
-      afficherMessage(ctx,
-          ok ? 'Commande confirmée' : result?['error']?.toString() ?? 'Erreur',
-          succes: ok);
-    }
-  }
-
-  Future<void> _annuler(
-    BuildContext ctx, WidgetRef ref, String numero,
-  ) async {
-    final motifCtrl = TextEditingController();
-    final confirm = await showDialog<bool>(
-      context: ctx,
-      builder: (_) => AlertDialog(
-        title: const Text('Refuser la commande ?'),
-        content: TextField(
-          controller: motifCtrl,
-          decoration: const InputDecoration(
-            labelText: 'Motif (requis)',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-                backgroundColor: AppColors.rouge),
-            child: const Text('Refuser'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && motifCtrl.text.isNotEmpty) {
-      final result = await ref
-          .read(commandesProducteurProvider('').notifier)
-          .changerStatut(numero, 'annuler',
-              motif: motifCtrl.text);
-      if (ctx.mounted) {
-        final ok = result?['success'] == true;
-        afficherMessage(ctx, ok ? 'Commande refusée' : 'Erreur', succes: ok);
-      }
-    }
   }
 }

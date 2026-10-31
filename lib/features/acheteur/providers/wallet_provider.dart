@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/utils/image_utils.dart';
 import '../../../models/wallet.dart';
 import '../../../models/wallet_transaction.dart';
 import '../../../models/wallet_retrait.dart';
@@ -197,7 +198,7 @@ class WalletNotifier extends StateNotifier<AsyncValue<Wallet>> {
         'montant': montant,
         'preuve': await MultipartFile.fromFile(
           preuve.path,
-          filename: preuve.name,
+          filename: nomImageEnvoi(preuve),
         ),
       });
       final res  = await _api.postMultipart(

@@ -1,9 +1,14 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/image_utils.dart';
+import '../../../shared/widgets/empty_state.dart';
+import '../../../shared/widgets/loading_widget.dart';
+import '../../acheteur/providers/catalogue_provider.dart';
 import '../../../shared/ui/ui.dart';
 import '../providers/mes_produits_provider.dart';
 import '../providers/unites_mesure_provider.dart';
@@ -30,7 +35,9 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
   int?    _uniteVenteId;
   int?    _categorieId;
   File?   _imageFile;
+  String? _imageActuelle;
   bool    _isLoading   = false;
+  bool    _prerempli   = false;
 
   @override
   void dispose() {
@@ -42,6 +49,23 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
     _seuilCtrl.dispose();
     _origCtrl.dispose();
     super.dispose();
+  }
+
+  /// Modification : recopie la fiche dans le formulaire, une seule fois
+  /// (une relecture ne doit pas écraser ce qui est en cours de saisie).
+  void _preremplir(Map<String, dynamic> p) {
+    if (_prerempli) return;
+    _prerempli = true;
+    _nomCtrl.text   = p['nom']?.toString() ?? '';
+    _varCtrl.text   = p['variete']?.toString() ?? '';
+    _descCtrl.text  = p['description']?.toString() ?? '';
+    _prixCtrl.text  = p['prix_unitaire']?.toString() ?? '';
+    _stockCtrl.text = p['stock_disponible']?.toString() ?? '';
+    _seuilCtrl.text = p['seuil_alerte']?.toString() ?? '';
+    _origCtrl.text  = p['origine']?.toString() ?? '';
+    _uniteVenteId   = p['unite_vente_id'] as int?;
+    _categorieId    = (p['categorie'] as Map?)?['id'] as int?;
+    _imageActuelle  = p['image_principale'] as String?;
   }
 
   Future<void> _pickImage() async {
@@ -85,9 +109,9 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
           .modifier(widget.slug!, body, imagePath: _imageFile?.path);
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (!mounted) return;
     if (success) {
       afficherMessage(context,
           widget.slug == null ? 'Produit créé' : 'Produit modifié');
@@ -100,6 +124,12 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final slug = widget.slug;
+    final fiche = slug == null ? null : ref.watch(monProduitProvider(slug));
+    final produit = fiche?.valueOrNull;
+    if (produit != null) _preremplir(produit);
+    final attente = fiche != null && !_prerempli;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -108,7 +138,14 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
               : 'Modifier le produit',
         ),
       ),
-      body: Form(
+      body: attente
+          ? (fiche.isLoading
+              ? const LoadingWidget()
+              : const EmptyState(
+                  icone: Icons.inventory_2_outlined,
+                  titre: 'Produit introuvable',
+                ))
+          : Form(
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -127,13 +164,15 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
                     borderRadius: BorderRadius.circular(18),
                     border:       Border.all(color: AppColors.grisBord),
                   ),
-                  child: _imageFile != null
+                  child: _imageFile != null || _imageActuelle != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(18),
-                          child: Image.file(
-                            _imageFile!,
-                            fit: BoxFit.cover,
-                          ),
+                          child: _imageFile != null
+                              ? Image.file(_imageFile!, fit: BoxFit.cover)
+                              : CachedNetworkImage(
+                                  imageUrl: ImageUtils.imageUrl(_imageActuelle),
+                                  fit: BoxFit.cover,
+                                ),
                         )
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -165,6 +204,35 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
                 ),
                 validator: (v) =>
                     v?.isEmpty == true ? 'Requis' : null,
+              ),
+              const SizedBox(height: 12),
+
+              // ── Catégorie ──────────────────────────────────
+              Consumer(
+                builder: (context, ref, _) {
+                  final categories = ref.watch(categoriesProvider);
+                  final liste = categories.valueOrNull ?? const [];
+                  return DropdownButtonFormField<int>(
+                    key: ValueKey(liste.length),
+                    initialValue: liste.any((c) => c['id'] == _categorieId)
+                        ? _categorieId : null,
+                    isExpanded: true,
+                    items: [
+                      for (final c in liste)
+                        DropdownMenuItem(
+                          value: c['id'] as int,
+                          child: Text(c['nom'].toString(),
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                    ],
+                    onChanged: (v) => setState(() => _categorieId = v),
+                    decoration: const InputDecoration(
+                      labelText:  'Catégorie *',
+                      prefixIcon: Icon(Icons.category_outlined),
+                    ),
+                    validator: (v) => v == null ? 'Requis' : null,
+                  );
+                },
               ),
               const SizedBox(height: 12),
 
@@ -224,7 +292,9 @@ class _ProduitFormScreenState extends ConsumerState<ProduitFormScreen> {
                         data: (liste) {
                           _uniteVenteId ??= liste.isNotEmpty ? liste.first.id : null;
                           return DropdownButtonFormField<int>(
-                            initialValue: _uniteVenteId,
+                            initialValue: liste.any((u) => u.id == _uniteVenteId)
+                                ? _uniteVenteId : null,
+                            isExpanded: true,
                             items: liste.map((u) => DropdownMenuItem(
                               value: u.id,
                               child: Text(u.nom, overflow: TextOverflow.ellipsis),

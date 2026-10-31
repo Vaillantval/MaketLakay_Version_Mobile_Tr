@@ -1,4 +1,14 @@
+import 'package:image_picker/image_picker.dart';
+
 import '../constants/app_constants.dart';
+
+/// Nom d'envoi d'une image choisie : le sélecteur Android peut fournir un
+/// nom sans extension, que le serveur refuse (« Format non supporté »).
+String nomImageEnvoi(XFile image) {
+  final nom = image.name;
+  if (RegExp(r'\.\w{3,4}$').hasMatch(nom)) return nom;
+  return image.mimeType == 'image/png' ? '$nom.png' : '$nom.jpg';
+}
 
 class ImageUtils {
   /// Construit l'URL absolue d'une image servie par le backend.

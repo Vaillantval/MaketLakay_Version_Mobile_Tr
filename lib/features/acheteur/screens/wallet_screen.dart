@@ -347,9 +347,9 @@ class _CarteCashback extends StatelessWidget {
           Expanded(
             child: Text(
               cashback.plafond > 0
-                  ? 'Cashback de ${cashback.taux.toStringAsFixed(0)} % sur vos achats '
+                  ? 'Cashback de ${_taux(cashback.taux)} % sur vos achats '
                     '(plafond ${FormatUtils.htg(cashback.plafond)})'
-                  : 'Cashback de ${cashback.taux.toStringAsFixed(0)} % sur vos achats',
+                  : 'Cashback de ${_taux(cashback.taux)} % sur vos achats',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
@@ -392,7 +392,7 @@ class _CarteParrainage extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           parrainage.tauxBonus > 0
-              ? 'Gagnez un bonus de ${parrainage.tauxBonus.toStringAsFixed(0)} % sur chaque filleul.'
+              ? 'Gagnez un bonus de ${_taux(parrainage.tauxBonus)} % sur chaque filleul.'
               : 'Partagez votre code avec vos proches.',
           style: const TextStyle(fontSize: 12, color: AppColors.grisTexte),
         ),
@@ -435,6 +435,11 @@ class _CarteParrainage extends StatelessWidget {
 
 // ── Bouton d'action ────────────────────────────────────────────────────
 
+/// Taux lisible : 10, 1,6 (jamais arrondi à l'entier).
+String _taux(double taux) => taux == taux.roundToDouble()
+    ? taux.toStringAsFixed(0)
+    : taux.toString().replaceAll('.', ',');
+
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String   label;
@@ -455,12 +460,15 @@ class _ActionButton extends StatelessWidget {
       children: [
         BoutonRond(icon, onTap: onTap, plein: principal, taille: 54),
         const SizedBox(height: 6),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          textAlign: TextAlign.center,
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     ),

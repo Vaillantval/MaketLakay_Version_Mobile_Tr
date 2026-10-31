@@ -22,6 +22,9 @@ import 'donnees.dart';
 
 /// Faux client API : renvoie des réponses réalistes (format backend
 /// MaketLakay) selon le chemin, sans réseau.
+/// Dernier corps envoyé par POST, par chemin (vérifier ce que l'app transmet).
+final envoisApi = <String, dynamic>{};
+
 class FakeApi implements ApiClient {
   final Map<String, dynamic> Function(String path) repondre;
   FakeApi(this.repondre);
@@ -35,7 +38,10 @@ class FakeApi implements ApiClient {
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async => _r(path);
   @override
-  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async => _r(path);
+  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    envoisApi[path] = data;
+    return _r(path);
+  }
   @override
   Future<Response> patch(String path, {dynamic data, Options? options}) async => _r(path);
   @override

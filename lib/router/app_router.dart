@@ -32,6 +32,8 @@ import '../features/acheteur/screens/bons_cadeaux_screen.dart';
 import '../features/acheteur/screens/wallet_code_paiement_screen.dart';
 import '../features/producteur/screens/dashboard_screen.dart' show DashboardProducteurScreen;
 import '../features/producteur/screens/commandes_recues_screen.dart';
+import '../features/producteur/screens/commande_detail_screen.dart' as entreprise show CommandeDetailScreen;
+import '../features/producteur/screens/produit_form_screen.dart';
 import '../features/producteur/screens/mes_produits_screen.dart';
 import '../features/producteur/screens/collectes_screen.dart' show CollectesProducteurScreen;
 import '../features/producteur/screens/profil_producteur_screen.dart';
@@ -238,8 +240,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (ctx, state, child) => ProducteurShell(child: child),
         routes: [
           GoRoute(path: '/producteur/dashboard', builder: (_, __) => const DashboardProducteurScreen()),
-          GoRoute(path: '/producteur/commandes', builder: (_, __) => const CommandesRecuesScreen()),
+          GoRoute(
+            path: '/producteur/commandes',
+            builder: (_, state) => CommandesRecuesScreen(statutInitial: state.uri.queryParameters['statut']),
+          ),
+          GoRoute(
+            path: '/producteur/commande/:numero',
+            builder: (_, state) => entreprise.CommandeDetailScreen(numero: state.pathParameters['numero']!),
+          ),
           GoRoute(path: '/producteur/catalogue', builder: (_, __) => const MesProduitsScreen()),
+          GoRoute(path: '/producteur/produit/nouveau', builder: (_, __) => const ProduitFormScreen()),
+          GoRoute(
+            path: '/producteur/produit/:slug/modifier',
+            builder: (_, state) => ProduitFormScreen(slug: state.pathParameters['slug']!),
+          ),
           GoRoute(path: '/producteur/collectes', builder: (_, __) => const CollectesProducteurScreen()),
           GoRoute(path: '/producteur/profil',    builder: (_, __) => const ProfilProducteurScreen()),
           GoRoute(path: '/producteur/entreprise', builder: (_, __) => const EntrepriseInfosScreen()),
@@ -345,8 +359,8 @@ class ProducteurShell extends ConsumerWidget {
       body: child,
       bottomNavigationBar: _buildBottomNav(context, [
         const _NavItem(icon: Icons.space_dashboard_outlined, iconActif: Icons.space_dashboard_rounded, label: 'Accueil', route: '/producteur/dashboard'),
-        const _NavItem(icon: Icons.receipt_long_outlined, iconActif: Icons.receipt_long_rounded, label: 'Commandes', route: '/producteur/commandes'),
-        const _NavItem(icon: Icons.inventory_2_outlined, iconActif: Icons.inventory_2_rounded, label: 'Produits', route: '/producteur/catalogue'),
+        const _NavItem(icon: Icons.receipt_long_outlined, iconActif: Icons.receipt_long_rounded, label: 'Commandes', route: '/producteur/commandes', autres: ['/producteur/commande']),
+        const _NavItem(icon: Icons.inventory_2_outlined, iconActif: Icons.inventory_2_rounded, label: 'Produits', route: '/producteur/catalogue', autres: ['/producteur/produit']),
         const _NavItem(icon: Icons.local_shipping_outlined, iconActif: Icons.local_shipping_rounded, label: 'Collectes', route: '/producteur/collectes'),
         const _NavItem(icon: Icons.person_outline_rounded, iconActif: Icons.person_rounded, label: 'Profil', route: '/producteur/profil', autres: ['/producteur/entreprise', '/producteur/membres', '/producteur/wallet']),
       ]),
@@ -397,7 +411,9 @@ class _PosShellState extends ConsumerState<PosShell> {
         bottom: false,
         child: Column(
         children: [
-          const OfflineBanner(),
+          const OfflineBanner(
+            messageHorsLigne: 'Hors ligne — la vente en espèces reste possible',
+          ),
           const PosTerminalBanner(),
           // Écran Session : l'état y est déjà affiché en grand
           if (!GoRouterState.of(context).matchedLocation.startsWith('/pos/session'))

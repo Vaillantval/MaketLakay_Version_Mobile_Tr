@@ -54,7 +54,7 @@ class AdminPlusScreen extends ConsumerWidget {
                 icone: Icons.inventory_2_outlined,
                 titre: 'Catalogue',
                 valeur: stats == null ? null : '${stats.totalProduits}',
-                onTap: () => context.go('/admin/catalogue'),
+                onTap: () => context.push('/admin/catalogue'),
               ),
               LigneReglage(
                 icone: Icons.warehouse_outlined,
@@ -62,7 +62,7 @@ class AdminPlusScreen extends ConsumerWidget {
                 valeur: (stats?.alertesStock ?? 0) > 0
                     ? '${stats!.alertesStock} alerte(s)'
                     : null,
-                onTap: () => context.go('/admin/stocks'),
+                onTap: () => context.push('/admin/stocks'),
               ),
               LigneReglage(
                 icone: Icons.local_shipping_outlined,
@@ -70,13 +70,13 @@ class AdminPlusScreen extends ConsumerWidget {
                 valeur: stats == null
                     ? null
                     : '${stats.collectesPlanifiees + stats.collectesEnCours} active(s)',
-                onTap: () => context.go('/admin/collectes'),
+                onTap: () => context.push('/admin/collectes'),
               ),
               LigneReglage(
                 icone: Icons.group_outlined,
                 titre: 'Utilisateurs',
                 valeur: stats == null ? null : '${stats.totalUsers}',
-                onTap: () => context.go('/admin/utilisateurs'),
+                onTap: () => context.push('/admin/utilisateurs'),
               ),
             ]),
             const Surtitre('Compte'),

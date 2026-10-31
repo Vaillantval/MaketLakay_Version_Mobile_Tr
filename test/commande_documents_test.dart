@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:maketlakay/core/utils/image_utils.dart';
 import 'package:maketlakay/core/utils/document_commande.dart';
 import 'package:maketlakay/models/commande.dart';
 import 'package:maketlakay/shared/widgets/compte_depot.dart';
@@ -159,6 +161,13 @@ void main() {
   });
 
   group('paiement hors ligne', () {
+    test("nom d'envoi : une extension, même si le sélecteur n'en donne pas", () {
+      expect(nomImageEnvoi(XFile('1000000021')), '1000000021.jpg');
+      expect(nomImageEnvoi(XFile('1000000021', mimeType: 'image/png')),
+          '1000000021.png');
+      expect(nomImageEnvoi(XFile('recu.jpeg')), 'recu.jpeg');
+    });
+
     Future<void> ouvrirCheckout(WidgetTester tester, List<Map<String, dynamic>> comptes) async {
       await monterApp(tester,
           chemin: '/acheteur/checkout',
@@ -201,6 +210,30 @@ void main() {
           matching: find.byType(RadioListTile<String>)));
       expect(tuile.enabled, isFalse);
     });
+  });
+
+  testWidgets("la première adresse, cochée d'office, part avec la commande", (tester) async {
+    envoisApi.clear();
+    await monterApp(tester,
+        chemin: '/acheteur/checkout',
+        utilisateur: utilisateurMembre,
+        repondre: (path) {
+          if (path == '/api/auth/adresses/') {
+            return {
+              'success': true,
+              'data': [
+                {'id': 5, 'rue': 'Rue Grégoire 12', 'commune': 'Pétion-Ville', 'departement': 'ouest'},
+              ],
+            };
+          }
+          if (path == '/api/orders/commander/') return {'success': false, 'error': 'stop'};
+          return reponseFactice(path, utilisateurMembre);
+        });
+    final bouton = find.text('Confirmer la commande');
+    await tester.scrollUntilVisible(bouton, 300, scrollable: find.byType(Scrollable).first);
+    await tester.tap(bouton);
+    await laisserCharger(tester);
+    expect(envoisApi['/api/orders/commander/']['adresse_livraison_id'], 5);
   });
 
   testWidgets('recharge : les comptes passent avant les anciens numéros', (tester) async {

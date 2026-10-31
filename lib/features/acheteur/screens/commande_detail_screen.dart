@@ -138,7 +138,7 @@ class CommandeDetailScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item['nom']?.toString() ?? 'Produit',
+                                Text((item['nom'] ?? item['produit'] ?? item['produit_nom'] ?? 'Produit').toString(),
                                     style: const TextStyle(
                                         fontSize: 14, fontWeight: FontWeight.w600)),
                                 Text(
@@ -171,9 +171,10 @@ class CommandeDetailScreen extends ConsumerWidget {
                     LigneInfo(Icons.place_outlined, 'Adresse',
                         commande.adresseLivraison ?? 'Non spécifiée'),
                     LigneInfo(Icons.local_shipping_outlined, 'Mode',
-                        commande.modeLivraison ?? '—'),
+                        libellesModeLivraison[commande.modeLivraison] ??
+                            commande.modeLivraison ?? '—'),
                     LigneInfo(Icons.payments_outlined, 'Paiement',
-                        commande.statutPaiement),
+                        commande.libellePaiement),
                     if (commande.montantWalletUtilise > 0) ...[
                       LigneInfo(Icons.account_balance_wallet_outlined,
                           'Payé par portefeuille',

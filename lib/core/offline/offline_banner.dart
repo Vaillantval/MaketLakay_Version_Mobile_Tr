@@ -6,7 +6,12 @@ import 'sync_queue.dart';
 
 /// Bannière à afficher en haut des écrans quand offline
 class OfflineBanner extends ConsumerWidget {
-  const OfflineBanner({super.key});
+  /// Texte hors ligne quand rien n'attend d'être synchronisé.
+  final String messageHorsLigne;
+  const OfflineBanner({
+    this.messageHorsLigne = 'Hors ligne — Mode lecture seule',
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,7 +54,7 @@ class OfflineBanner extends ConsumerWidget {
             child: Text(
               pendingCount > 0
                   ? 'Hors ligne — $pendingCount action(s) en attente de sync'
-                  : 'Hors ligne — Mode lecture seule',
+                  : messageHorsLigne,
               style: const TextStyle(
                 color: Colors.white, fontSize: 12,
               ),
